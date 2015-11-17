@@ -12,24 +12,32 @@ $app['debug'] = true;
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
   "twig.path" => __DIR__.'/views'
 ));
-// ---
+
+$app->register(new Silex\Provider\UrlGeneratorServiceProvider());
+// --- End of service definition ---
 
 // Define some middleware function in here
 $mustBeLogged = function(Request $request, Silex\Application $app) {
   $userSession = false;
   if (!$userSession) {
-    return $app->redirect("/login");
+    return $app->redirect($app["url_generator"]->generate("login"));
   }
 };
-// ---
+
+$mustBeGuest = function(Request $request, Silex\Application $app) {
+  // todo
+};
+// --- End of middleware function definition ---
 
 // Define controller for login page --
 $login = $app["controllers_factory"];
 $login->get("/", function(Request $request) use ($app) {
   return $app["twig"]->render("index.twig");
-});
+})->bind("login");
 $login->post("/", function(Request $request) use ($app) {});
-// ---
+
+$login->before($mustBeGuest);
+// --- End of login controller definition ---
 
 // Define global controller
 $global = $app["controllers_factory"];
@@ -38,7 +46,7 @@ $global->get("/", function() use ($app) {
 });
 
 $global->before($mustBeLogged);
-// ---
+// --- End if global controller definition ---
 
 $app->mount("/", $global);
 $app->mount("/login", $login);
