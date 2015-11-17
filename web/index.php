@@ -14,6 +14,15 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
 ));
 // ---
 
+// Define some middleware function in here
+$mustBeLogged = function(Request $request, Silex\Application $app) {
+  $userSession = false;
+  if (!$userSession) {
+    return $app->redirect("/login");
+  }
+};
+// ---
+
 // Define controller for login page --
 $login = $app["controllers_factory"];
 $login->get("/", function(Request $request) use ($app) {
@@ -23,11 +32,15 @@ $login->post("/", function(Request $request) use ($app) {});
 // ---
 
 // Define global controller
-$app->get("/", function() use ($app) {
+$global = $app["controllers_factory"];
+$global->get("/", function() use ($app) {
   return "Home page";
 });
+
+$global->before($mustBeLogged);
 // ---
 
+$app->mount("/", $global);
 $app->mount("/login", $login);
 
 $app->run();
