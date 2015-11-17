@@ -19,9 +19,7 @@ $login = $app["controllers_factory"];
 $login->get("/", function(Request $request) use ($app) {
   return $app["twig"]->render("index.twig");
 });
-$login->post("/", function(Request $request) use ($app) {
-
-});
+$login->post("/", function(Request $request) use ($app) {});
 // ---
 
 // Define global controller
