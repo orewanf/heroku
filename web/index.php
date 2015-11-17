@@ -24,8 +24,6 @@ $login->post("/", function(Request $request) use ($app) {
 });
 // ---
 
-
-
 // Define global controller
 $app->get("/", function() use ($app) {
   return "Home page";
