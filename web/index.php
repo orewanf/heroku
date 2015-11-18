@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 $app = new Silex\Application();
 $app['debug'] = true;
 
+
 // Register some services here
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
   "twig.path" => __DIR__.'/views'
@@ -16,42 +17,29 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
 $app->register(new Silex\Provider\UrlGeneratorServiceProvider());
 // --- End of service definition ---
 
+
 // Define some middleware function in here
-$mustBeLogged = function(Request $request, Silex\Application $app) {
+$app["middleware.mustBeLogged"] = $app->protect(function(Request $request, Silex\Application $app) {
   $userSession = false;
   if (!$userSession) {
     return $app->redirect($app["url_generator"]->generate("login"));
   }
-};
+});
 
-$mustBeGuest = function(Request $request, Silex\Application $app) {
+$app["middleware.mustBeGuest"] = function(Request $request, Silex\Application $app) {
   // todo
 };
 // --- End of middleware function definition ---
 
-// Define controller for login page --
-$login = $app["controllers_factory"];
-$login->get("/", function(Request $request) use ($app) {
-  return $app["twig"]->render("index.twig");
-})->bind("login");
-$login->post("/", function(Request $request) use ($app) {});
 
-$login->before($mustBeGuest);
-// --- End of login controller definition ---
+// Mount the required controller
+$app->mount("/", new Adi\Controllers\HomeController());
+$app->mount("/login", new Adi\Controllers\LoginController());
+// --- End of mounting ---
 
-// Define global controller
-$global = $app["controllers_factory"];
-$global->get("/", function() use ($app) {
-  return "Home page";
-});
-
-$global->before($mustBeLogged);
-// --- End if global controller definition ---
-
-$app->mount("/", $global);
-$app->mount("/login", $login);
-
+// Last run the application
 $app->run();
+// --- End ---
 
 // putenv("DATABASE_URL=postgres://mnfkzlhnihtmhc:DuetOyhHbhK9o7bDbGIT5CpAFX@ec2-107-21-223-110.compute-1.amazonaws.com:5432/dcvecfgg12j7um");
 
